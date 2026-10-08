@@ -170,7 +170,7 @@ st.markdown(
 )
 
 # ============================================================
-# GAME
+# GAME HTML
 # ============================================================
 
 game_html = r"""
@@ -324,6 +324,83 @@ body {
 
 
 /* ============================================================
+   LEVEL SELECTOR
+============================================================ */
+
+.level-selector {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 10px;
+
+    flex-wrap: wrap;
+
+    margin: 0 auto 12px;
+
+    color: #68766c;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    letter-spacing: 1px;
+}
+
+.level-selector select {
+
+    background:
+        linear-gradient(
+            145deg,
+            #151b16,
+            #080c09
+        );
+
+    color: #7dff63;
+
+    border:
+        1px solid
+        rgba(57,255,20,.3);
+
+    border-radius: 10px;
+
+    padding: 9px 12px;
+
+    font-size: 10px;
+
+    font-weight: bold;
+
+    outline: none;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 0 15px
+        rgba(57,255,20,.04);
+}
+
+.level-selector select:hover {
+
+    border-color:
+        #39ff14;
+
+    box-shadow:
+        0 0 18px
+        rgba(57,255,20,.15);
+}
+
+.level-selector option {
+
+    background: #080c09;
+
+    color: white;
+}
+
+
+/* ============================================================
    GAME BOARD
 ============================================================ */
 
@@ -380,7 +457,7 @@ canvas {
 
 
 /* ============================================================
-   CENTER OVERLAY
+   OVERLAY
 ============================================================ */
 
 .overlay {
@@ -463,7 +540,6 @@ canvas {
     letter-spacing: 1px;
 
     color: #6f8075;
-
 }
 
 
@@ -486,7 +562,8 @@ canvas {
 
 button {
 
-    border: 1px solid
+    border:
+        1px solid
         rgba(255,255,255,.1);
 
     background:
@@ -665,7 +742,10 @@ button:active {
 
 <div class="game">
 
-    <!-- HUD -->
+
+    <!-- =====================================================
+         HUD
+    ====================================================== -->
 
     <div class="hud">
 
@@ -716,11 +796,54 @@ button:active {
     </div>
 
 
-    <!-- BOARD -->
+    <!-- =====================================================
+         LEVEL SELECTOR
+    ====================================================== -->
+
+    <div class="level-selector">
+
+        <span>
+            🎯 SELECT LEVEL
+        </span>
+
+        <select
+            id="levelSelect"
+            onchange="changeLevel(this.value)"
+        >
+
+            <option value="1">
+                🟢 LEVEL 1 — EASY
+            </option>
+
+            <option value="2">
+                🟡 LEVEL 2 — NORMAL
+            </option>
+
+            <option value="3">
+                🟠 LEVEL 3 — HARD
+            </option>
+
+            <option value="4">
+                🔴 LEVEL 4 — EXTREME
+            </option>
+
+            <option value="5">
+                💀 LEVEL 5 — INSANE
+            </option>
+
+        </select>
+
+    </div>
+
+
+    <!-- =====================================================
+         BOARD
+    ====================================================== -->
 
     <div class="board-wrap">
 
         <canvas id="game"></canvas>
+
 
         <div
             class="overlay"
@@ -729,13 +852,17 @@ button:active {
             <div
                 class="overlay-title"
                 id="overlayTitle">
+
                 🐍 SNAKE
+
             </div>
 
             <div
                 class="overlay-text"
                 id="overlayText">
+
                 PRESS START TO PLAY
+
             </div>
 
         </div>
@@ -743,39 +870,55 @@ button:active {
     </div>
 
 
-    <!-- MESSAGE -->
+    <!-- =====================================================
+         MESSAGE
+    ====================================================== -->
 
     <div
         class="message"
         id="message">
+
         Ready?
+
     </div>
 
 
-    <!-- BUTTONS -->
+    <!-- =====================================================
+         ACTION BUTTONS
+    ====================================================== -->
 
     <div class="actions">
 
         <button
             class="primary"
             onclick="startGame()">
+
             ▶ START
+
         </button>
+
 
         <button
             onclick="togglePause()">
+
             ⏸ PAUSE
+
         </button>
+
 
         <button
             onclick="restartGame()">
+
             ↻ RESTART
+
         </button>
 
     </div>
 
 
-    <!-- MOBILE CONTROLS -->
+    <!-- =====================================================
+         MOBILE CONTROLS
+    ====================================================== -->
 
     <div class="controls">
 
@@ -783,11 +926,15 @@ button:active {
             class="control empty">
         </button>
 
+
         <button
             class="control"
             onclick="changeDirection(0,-1)">
+
             ▲
+
         </button>
+
 
         <button
             class="control empty">
@@ -797,19 +944,27 @@ button:active {
         <button
             class="control"
             onclick="changeDirection(-1,0)">
+
             ◀
+
         </button>
+
 
         <button
             class="control"
             onclick="changeDirection(0,1)">
+
             ▼
+
         </button>
+
 
         <button
             class="control"
             onclick="changeDirection(1,0)">
+
             ▶
+
         </button>
 
     </div>
@@ -848,7 +1003,7 @@ const ctx =
 
 const GRID = 25;
 
-let cellSize = 24;
+const cellSize = 24;
 
 canvas.width =
     GRID * cellSize;
@@ -858,7 +1013,7 @@ canvas.height =
 
 
 /* ============================================================
-   GAME VARIABLES
+   VARIABLES
 ============================================================ */
 
 let snake;
@@ -877,6 +1032,8 @@ let highScore =
             "pythonSnakeHighScore"
         ) || 0
     );
+
+let selectedLevel = 1;
 
 let level = 1;
 
@@ -916,9 +1073,63 @@ const overlayTitle =
 const overlayText =
     document.getElementById("overlayText");
 
+const levelSelect =
+    document.getElementById("levelSelect");
+
 
 highScoreEl.textContent =
     highScore;
+
+
+/* ============================================================
+   LEVEL CHANGE
+============================================================ */
+
+function changeLevel(value) {
+
+    if (running) {
+
+        setMessage(
+            "⏸ STOP / RESTART GAME TO CHANGE LEVEL"
+        );
+
+        levelSelect.value =
+            selectedLevel;
+
+        return;
+    }
+
+
+    selectedLevel =
+        Number(value);
+
+    level =
+        selectedLevel;
+
+
+    updateStats();
+
+
+    const names = {
+
+        1: "🟢 EASY",
+
+        2: "🟡 NORMAL",
+
+        3: "🟠 HARD",
+
+        4: "🔴 EXTREME",
+
+        5: "💀 INSANE"
+
+    };
+
+
+    setMessage(
+        "Selected: " +
+        names[selectedLevel]
+    );
+}
 
 
 /* ============================================================
@@ -930,28 +1141,38 @@ function initializeGame() {
     snake = [
 
         {x: 12, y: 12},
+
         {x: 11, y: 12},
+
         {x: 10, y: 12},
+
         {x: 9, y: 12}
 
     ];
 
 
     direction = {
+
         x: 1,
+
         y: 0
+
     };
 
 
     nextDirection = {
+
         x: 1,
+
         y: 0
+
     };
 
 
     score = 0;
 
-    level = 1;
+    level =
+        selectedLevel;
 
     running = false;
 
@@ -969,7 +1190,9 @@ function initializeGame() {
 
     showOverlay(
         "🐍 SNAKE",
-        "PRESS START TO PLAY"
+        "LEVEL " +
+        selectedLevel +
+        " • PRESS START"
     );
 
 
@@ -1038,7 +1261,9 @@ function startGame() {
     hideOverlay();
 
     setMessage(
-        "🔥 GAME STARTED"
+        "🔥 LEVEL " +
+        selectedLevel +
+        " STARTED"
     );
 
     scheduleNextMove();
@@ -1067,6 +1292,7 @@ function stopGame() {
 
     running = false;
 
+
     if (timer) {
 
         clearTimeout(timer);
@@ -1086,7 +1312,8 @@ function togglePause() {
         return;
 
 
-    paused = !paused;
+    paused =
+        !paused;
 
 
     if (paused) {
@@ -1098,10 +1325,12 @@ function togglePause() {
             timer = null;
         }
 
+
         showOverlay(
             "⏸ PAUSED",
             "PRESS SPACE TO CONTINUE"
         );
+
 
         setMessage(
             "Game paused"
@@ -1126,7 +1355,7 @@ function togglePause() {
    DIRECTION
 ============================================================ */
 
-function changeDirection(x, y) {
+function changeDirection(x,y) {
 
     if (!running || gameOver)
         return;
@@ -1142,8 +1371,11 @@ function changeDirection(x, y) {
 
 
     nextDirection = {
+
         x: x,
+
         y: y
+
     };
 }
 
@@ -1167,7 +1399,10 @@ document.addEventListener(
 
             event.preventDefault();
 
-            changeDirection(0,-1);
+            changeDirection(
+                0,
+                -1
+            );
         }
 
 
@@ -1178,7 +1413,10 @@ document.addEventListener(
 
             event.preventDefault();
 
-            changeDirection(0,1);
+            changeDirection(
+                0,
+                1
+            );
         }
 
 
@@ -1189,7 +1427,10 @@ document.addEventListener(
 
             event.preventDefault();
 
-            changeDirection(-1,0);
+            changeDirection(
+                -1,
+                0
+            );
         }
 
 
@@ -1200,7 +1441,10 @@ document.addEventListener(
 
             event.preventDefault();
 
-            changeDirection(1,0);
+            changeDirection(
+                1,
+                0
+            );
         }
 
 
@@ -1233,26 +1477,38 @@ function scheduleNextMove() {
     }
 
 
+    const speeds = {
+
+        1: 180,
+
+        2: 130,
+
+        3: 90,
+
+        4: 65,
+
+        5: 45
+
+    };
+
+
     const speed =
-        Math.max(
-            55,
-            165 -
-            ((level - 1) * 9)
+        speeds[selectedLevel];
+
+
+    timer =
+        setTimeout(
+            function() {
+
+                update();
+
+                draw();
+
+                scheduleNextMove();
+
+            },
+            speed
         );
-
-
-    timer = setTimeout(
-        function() {
-
-            update();
-
-            draw();
-
-            scheduleNextMove();
-
-        },
-        speed
-    );
 }
 
 
@@ -1275,16 +1531,20 @@ function update() {
         y:
             snake[0].y +
             direction.y
+
     };
 
 
-    /* WALL */
+    /* WALL COLLISION */
 
     if (
 
         head.x < 0 ||
+
         head.x >= GRID ||
+
         head.y < 0 ||
+
         head.y >= GRID
 
     ) {
@@ -1295,7 +1555,7 @@ function update() {
     }
 
 
-    /* SELF */
+    /* SELF COLLISION */
 
     if (
 
@@ -1321,6 +1581,7 @@ function update() {
     if (
 
         head.x === food.x &&
+
         head.y === food.y
 
     ) {
@@ -1328,15 +1589,10 @@ function update() {
         score++;
 
 
-        level =
-            Math.floor(
-                score / 5
-            ) + 1;
-
-
         if (score > highScore) {
 
-            highScore = score;
+            highScore =
+                score;
 
 
             localStorage.setItem(
@@ -1350,9 +1606,10 @@ function update() {
 
         updateStats();
 
+
         setMessage(
             "🍎 FOOD +1 • LEVEL " +
-            level
+            selectedLevel
         );
 
     }
@@ -1385,7 +1642,10 @@ function endGame() {
 
     showOverlay(
         "💀 GAME OVER",
-        "SCORE: " + score
+        "SCORE: " +
+        score +
+        " • LEVEL: " +
+        selectedLevel
     );
 
 
@@ -1411,7 +1671,7 @@ function updateStats() {
         highScore;
 
     levelEl.textContent =
-        level;
+        selectedLevel;
 }
 
 
@@ -1487,6 +1747,7 @@ function draw() {
         "#0d180f"
     );
 
+
     gradient.addColorStop(
         1,
         "#020402"
@@ -1558,7 +1819,7 @@ function draw() {
 
 
 /* ============================================================
-   FOOD
+   FOOD DRAW
 ============================================================ */
 
 function drawFood() {
@@ -1574,6 +1835,7 @@ function drawFood() {
         food.x * cellSize +
         cellSize / 2;
 
+
     const fy =
         food.y * cellSize +
         cellSize / 2;
@@ -1583,10 +1845,9 @@ function drawFood() {
         Math.sin(foodPulse) * 2;
 
 
-    /* GLOW */
-
     ctx.shadowColor =
         "#ff3b30";
+
 
     ctx.shadowBlur =
         18 + pulse;
@@ -1594,10 +1855,12 @@ function drawFood() {
 
     ctx.beginPath();
 
+
     ctx.arc(
         fx,
         fy,
-        cellSize * .27 + pulse * .1,
+        cellSize * .27 +
+        pulse * .1,
         0,
         Math.PI * 2
     );
@@ -1606,15 +1869,17 @@ function drawFood() {
     ctx.fillStyle =
         "#ff3b30";
 
+
     ctx.fill();
 
 
     ctx.shadowBlur = 0;
 
 
-    /* HIGHLIGHT */
+    /* FOOD HIGHLIGHT */
 
     ctx.beginPath();
+
 
     ctx.arc(
         fx - 3,
@@ -1628,12 +1893,13 @@ function drawFood() {
     ctx.fillStyle =
         "#ffffff";
 
+
     ctx.fill();
 }
 
 
 /* ============================================================
-   SNAKE
+   SNAKE DRAW
 ============================================================ */
 
 function drawSnake() {
@@ -1651,6 +1917,7 @@ function drawSnake() {
                 part.x * cellSize +
                 padding;
 
+
             const y =
                 part.y * cellSize +
                 padding;
@@ -1660,8 +1927,6 @@ function drawSnake() {
                 cellSize -
                 padding * 2;
 
-
-            /* GLOW */
 
             if (index === 0) {
 
@@ -1721,6 +1986,7 @@ function drawSnake() {
 
             ctx.beginPath();
 
+
             ctx.roundRect(
                 x,
                 y,
@@ -1730,6 +1996,7 @@ function drawSnake() {
                     ? 6
                     : 4
             );
+
 
             ctx.fill();
 
@@ -1744,6 +2011,7 @@ function drawSnake() {
                     part.y
                 );
             }
+
         }
     );
 }
@@ -1762,6 +2030,7 @@ function drawEyes(x,y) {
     const baseX =
         x * cellSize;
 
+
     const baseY =
         y * cellSize;
 
@@ -1772,8 +2041,11 @@ function drawEyes(x,y) {
     if (direction.x > 0) {
 
         eyes = [
+
             [baseX+17,baseY+7],
+
             [baseX+17,baseY+17]
+
         ];
 
     }
@@ -1781,8 +2053,11 @@ function drawEyes(x,y) {
     else if (direction.x < 0) {
 
         eyes = [
+
             [baseX+7,baseY+7],
+
             [baseX+7,baseY+17]
+
         ];
 
     }
@@ -1790,8 +2065,11 @@ function drawEyes(x,y) {
     else if (direction.y < 0) {
 
         eyes = [
+
             [baseX+7,baseY+7],
+
             [baseX+17,baseY+7]
+
         ];
 
     }
@@ -1799,8 +2077,11 @@ function drawEyes(x,y) {
     else {
 
         eyes = [
+
             [baseX+7,baseY+17],
+
             [baseX+17,baseY+17]
+
         ];
     }
 
@@ -1815,24 +2096,25 @@ function drawEyes(x,y) {
                 eye[1],
                 2.5,
                 0,
-                Math.PI*2
+                Math.PI * 2
             );
 
             ctx.fill();
+
         }
     );
 }
 
 
 /* ============================================================
-   START
+   INITIAL START
 ============================================================ */
 
 initializeGame();
 
 
 /* ============================================================
-   ANIMATION
+   IDLE ANIMATION
 ============================================================ */
 
 function animationLoop() {
@@ -1858,12 +2140,12 @@ animationLoop();
 """
 
 # ============================================================
-# RENDER
+# RENDER GAME
 # ============================================================
 
 components.html(
     game_html,
-    height=850,
+    height=930,
     scrolling=False,
 )
 
