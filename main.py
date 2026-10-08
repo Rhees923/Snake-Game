@@ -1,127 +1,373 @@
+```python
 """
-main.py - Main entry point for Python Snake Game desktop application.
+main.py - Streamlit Web Version of Python Snake Game
 """
 
-import sys
-import tkinter as tk
-from storage import StorageManager
-from settings import CANVAS_WIDTH, CANVAS_HEIGHT
-from menu import MenuManager
-from game import GameEngine
+import streamlit as st
+import random
+import time
+
+# --------------------------------------------------
+# PAGE CONFIG
+# --------------------------------------------------
+
+st.set_page_config(
+    page_title="PYTHON SNAKE",
+    page_icon="🐍",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
+
+# --------------------------------------------------
+# CUSTOM CSS
+# --------------------------------------------------
+
+st.markdown("""
+<style>
+    .stApp {
+        background: #050505;
+        color: white;
+    }
+
+    .snake-title {
+        text-align: center;
+        font-size: 48px;
+        font-weight: 900;
+        margin-bottom: 5px;
+    }
+
+    .snake-subtitle {
+        text-align: center;
+        color: #888;
+        margin-bottom: 25px;
+    }
+
+    .score-box {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        padding: 10px;
+        border-radius: 12px;
+        background: #111;
+        border: 1px solid #333;
+        margin-bottom: 20px;
+    }
+
+    .game-over {
+        text-align: center;
+        font-size: 30px;
+        font-weight: bold;
+        margin: 20px;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+# --------------------------------------------------
+# CONSTANTS
+# --------------------------------------------------
+
+BOARD_SIZE = 15
+
+# --------------------------------------------------
+# SESSION STATE
+# --------------------------------------------------
+
+if "snake" not in st.session_state:
+    st.session_state.snake = [(7, 7), (6, 7), (5, 7)]
+
+if "direction" not in st.session_state:
+    st.session_state.direction = (1, 0)
+
+if "food" not in st.session_state:
+    st.session_state.food = (10, 10)
+
+if "score" not in st.session_state:
+    st.session_state.score = 0
+
+if "highscore" not in st.session_state:
+    st.session_state.highscore = 0
+
+if "game_running" not in st.session_state:
+    st.session_state.game_running = False
+
+if "game_over" not in st.session_state:
+    st.session_state.game_over = False
 
 
-class PythonSnakeApp:
-    """Main Application Controller."""
+# --------------------------------------------------
+# FUNCTIONS
+# --------------------------------------------------
 
-    def __init__(self):
-        self.root = tk.Tk()
-        self.root.title("PYTHON SNAKE")
-        self.root.geometry(f"{CANVAS_WIDTH}x{CANVAS_HEIGHT}")
-        self.root.resizable(False, False)
+def create_food():
+    """Create food at a free position."""
 
-        # Center Window on Screen
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        x_crd = (screen_width // 2) - (CANVAS_WIDTH // 2)
-        y_crd = (screen_height // 2) - (CANVAS_HEIGHT // 2)
-        self.root.geometry(f"{CANVAS_WIDTH}x{CANVAS_HEIGHT}+{x_crd}+{y_crd}")
-
-        # Persistent Storage Data
-        self.settings = StorageManager.load_settings()
-        self.highscore = StorageManager.load_highscore()
-
-        # Canvas Creation
-        self.canvas = tk.Canvas(
-            self.root, width=CANVAS_WIDTH, height=CANVAS_HEIGHT,
-            highlightthickness=0
+    while True:
+        position = (
+            random.randint(0, BOARD_SIZE - 1),
+            random.randint(0, BOARD_SIZE - 1)
         )
-        self.canvas.pack(fill="both", expand=True)
 
-        # Controllers
-        self.menu_manager = MenuManager(
-            self.canvas,
-            callbacks={
-                "start_game": self.start_game,
-                "show_settings": self.show_settings,
-                "show_how_to_play": self.show_how_to_play,
-                "show_highscore": self.show_highscore,
-                "show_main_menu": self.show_main_menu,
-                "exit": self.quit_app
-            },
-            current_settings=self.settings
+        if position not in st.session_state.snake:
+            return position
+
+
+def start_game():
+    """Start a new game."""
+
+    st.session_state.snake = [
+        (7, 7),
+        (6, 7),
+        (5, 7)
+    ]
+
+    st.session_state.direction = (1, 0)
+    st.session_state.food = create_food()
+    st.session_state.score = 0
+    st.session_state.game_over = False
+    st.session_state.game_running = True
+
+
+def change_direction(direction):
+    """Change snake direction."""
+
+    current = st.session_state.direction
+
+    # Prevent direct reverse movement
+    if (
+        direction[0] == -current[0]
+        and direction[1] == -current[1]
+    ):
+        return
+
+    st.session_state.direction = direction
+
+
+def move_snake():
+    """Move the snake one step."""
+
+    snake = st.session_state.snake
+    direction = st.session_state.direction
+
+    head_x, head_y = snake[0]
+
+    new_head = (
+        head_x + direction[0],
+        head_y + direction[1]
+    )
+
+    # Wall collision
+    if (
+        new_head[0] < 0
+        or new_head[0] >= BOARD_SIZE
+        or new_head[1] < 0
+        or new_head[1] >= BOARD_SIZE
+    ):
+        end_game()
+        return
+
+    # Body collision
+    if new_head in snake:
+        end_game()
+        return
+
+    snake.insert(0, new_head)
+
+    # Food collision
+    if new_head == st.session_state.food:
+
+        st.session_state.score += 1
+
+        if st.session_state.score > st.session_state.highscore:
+            st.session_state.highscore = st.session_state.score
+
+        st.session_state.food = create_food()
+
+    else:
+        snake.pop()
+
+
+def end_game():
+    """End the current game."""
+
+    st.session_state.game_running = False
+    st.session_state.game_over = True
+
+
+def draw_board():
+    """Draw the Snake game board using HTML."""
+
+    snake = st.session_state.snake
+    food = st.session_state.food
+
+    html = """
+    <div style="
+        width: 360px;
+        height: 360px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: repeat(15, 1fr);
+        grid-template-rows: repeat(15, 1fr);
+        background: #111;
+        border: 4px solid #333;
+        border-radius: 12px;
+        overflow: hidden;
+    ">
+    """
+
+    for y in range(BOARD_SIZE):
+        for x in range(BOARD_SIZE):
+
+            position = (x, y)
+
+            if position == food:
+
+                cell = """
+                <div style="
+                    background:#111;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:17px;
+                ">🍎</div>
+                """
+
+            elif position in snake:
+
+                if position == snake[0]:
+                    cell = """
+                    <div style="
+                        background:#39ff14;
+                        border-radius:6px;
+                    "></div>
+                    """
+                else:
+                    cell = """
+                    <div style="
+                        background:#18b800;
+                        border-radius:4px;
+                    "></div>
+                    """
+
+            else:
+
+                cell = """
+                <div style="
+                    background:#0a0a0a;
+                    border:1px solid #151515;
+                "></div>
+                """
+
+            html += cell
+
+    html += "</div>"
+
+    st.markdown(html, unsafe_allow_html=True)
+
+
+# --------------------------------------------------
+# UI
+# --------------------------------------------------
+
+st.markdown(
+    '<div class="snake-title">🐍 PYTHON SNAKE</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    '<div class="snake-subtitle">Classic Snake Game • Web Edition</div>',
+    unsafe_allow_html=True
+)
+
+# Score
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown(
+        f'<div class="score-box">SCORE<br>{st.session_state.score}</div>',
+        unsafe_allow_html=True
+    )
+
+with col2:
+    st.markdown(
+        f'<div class="score-box">BEST<br>{st.session_state.highscore}</div>',
+        unsafe_allow_html=True
+    )
+
+# Board
+
+draw_board()
+
+st.write("")
+
+# --------------------------------------------------
+# CONTROLS
+# --------------------------------------------------
+
+if not st.session_state.game_running:
+
+    if st.session_state.game_over:
+
+        st.markdown(
+            '<div class="game-over">💀 GAME OVER</div>',
+            unsafe_allow_html=True
         )
 
-        self.game_engine = None
+    if st.button(
+        "🎮 START GAME",
+        use_container_width=True
+    ):
+        start_game()
+        st.rerun()
 
-        # Bind Global Keyboard Inputs
-        self.root.bind("<Key>", self.handle_keypress)
+else:
 
-        # Show initial menu
-        self.show_main_menu()
+    st.markdown("### 🎮 Controls")
 
-    def show_main_menu(self) -> None:
-        """Displays main menu."""
-        if self.game_engine:
-            self.game_engine.is_running = False
-        self.menu_manager.show_main_menu()
+    col1, col2, col3 = st.columns(3)
 
-    def start_game(self) -> None:
-        """Initializes and runs gameplay engine."""
-        self.game_engine = GameEngine(
-            canvas=self.canvas,
-            settings=self.settings,
-            highscore=self.highscore,
-            on_game_over=self.handle_game_over,
-            return_menu_cb=self.show_main_menu
-        )
-        self.game_engine.start()
+    with col2:
+        if st.button("⬆️", use_container_width=True):
+            change_direction((0, -1))
+            move_snake()
+            st.rerun()
 
-    def show_settings(self) -> None:
-        """Displays settings configuration screen."""
-        self.menu_manager.show_settings(
-            save_callback=self.save_settings,
-            reset_score_callback=self.reset_highscore
-        )
+    with col1:
+        if st.button("⬅️", use_container_width=True):
+            change_direction((-1, 0))
+            move_snake()
+            st.rerun()
 
-    def show_how_to_play(self) -> None:
-        """Displays instructions."""
-        self.menu_manager.show_how_to_play()
+    with col2:
+        if st.button("⬇️", use_container_width=True):
+            change_direction((0, 1))
+            move_snake()
+            st.rerun()
 
-    def show_highscore(self) -> None:
-        """Displays high scores."""
-        self.menu_manager.show_highscore(self.highscore)
+    with col3:
+        if st.button("➡️", use_container_width=True):
+            change_direction((1, 0))
+            move_snake()
+            st.rerun()
 
-    def handle_keypress(self, event: tk.Event) -> None:
-        """Delegates input handling to active game loop if running."""
-        if self.game_engine and self.game_engine.is_running:
-            self.game_engine.handle_keypress(event)
+    st.write("")
 
-    def save_settings(self) -> None:
-        """Persists current settings to disk."""
-        StorageManager.save_settings(self.settings)
+    if st.button(
+        "⏹️ STOP GAME",
+        use_container_width=True
+    ):
+        st.session_state.game_running = False
+        st.rerun()
 
-    def reset_highscore(self) -> None:
-        """Resets high score on disk and in-memory state."""
-        StorageManager.reset_highscore()
-        self.highscore = 0
-        self.show_settings()
+# --------------------------------------------------
+# AUTO REFRESH
+# --------------------------------------------------
 
-    def handle_game_over(self, final_score: int) -> None:
-        """Checks and saves new high score on game over."""
-        if final_score > self.highscore:
-            self.highscore = final_score
-            StorageManager.save_highscore(final_score)
+if st.session_state.game_running:
 
-    def quit_app(self) -> None:
-        """Terminates desktop application."""
-        self.root.destroy()
-        sys.exit(0)
+    time.sleep(0.15)
 
-    def run(self) -> None:
-        """Starts main Tkinter event loop."""
-        self.root.mainloop()
+    move_snake()
 
-
-if __name__ == "__main__":
-    app = PythonSnakeApp()
-    app.run()
+    st.rerun()
+```
