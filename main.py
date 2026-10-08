@@ -937,13 +937,3 @@ components.html(
     height=850,
     scrolling=False,
 )
-"""
-
-### 2. `requirements.txt`
-
-GitHub-ൽ **new file** ഉണ്ടാക്കി:
-
-:::writing{variant="document" id="31684" title="requirements.txt"}
-```txt
-streamlit
-````
