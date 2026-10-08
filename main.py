@@ -1,8 +1,53 @@
+"""
+============================================================
+🐍 PYTHON SNAKE - ULTIMATE WEB EDITION
+============================================================
+
+Merged from:
+- storage.py
+- snake.py
+- settings.py
+- menu.py
+- game.py
+- food.py
+- Streamlit Web Edition
+- README feature specification
+
+IMPORTANT:
+This version does NOT use tkinter.
+It is designed for Streamlit Cloud / web browsers.
+
+Features:
+- Beautiful Neon UI
+- Level 1-5 selection
+- Easy / Normal / Hard / Extreme / Insane
+- Dynamic speed
+- Normal / Bonus / Rare food
+- +10 / +25 / +50 points
+- High score using browser localStorage
+- Dark / Light / Neon themes
+- Grid ON / OFF
+- Sound ON / OFF
+- Pause / Resume
+- Restart
+- Keyboard controls
+- WASD controls
+- Mobile controls
+- Game over screen
+- Countdown
+- Snake collision
+- Food pulse animation
+- Responsive design
+- No external Python dependencies except Streamlit
+============================================================
+"""
+
 import streamlit as st
 import streamlit.components.v1 as components
 
+
 # ============================================================
-# PAGE CONFIG
+# STREAMLIT CONFIGURATION
 # ============================================================
 
 st.set_page_config(
@@ -12,27 +57,31 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+
 # ============================================================
-# STREAMLIT CSS
+# STREAMLIT OUTER DESIGN
 # ============================================================
 
 st.markdown(
     """
     <style>
 
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap');
+    @import url(
+        'https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap'
+    );
 
     * {
         font-family: 'Orbitron', sans-serif;
     }
 
-    .stApp {
-        min-height: 100vh;
+    html,
+    body,
+    [data-testid="stAppViewContainer"] {
 
         background:
             radial-gradient(
                 circle at 50% -10%,
-                rgba(0,255,90,.16),
+                rgba(0,255,90,.18),
                 transparent 35%
             ),
             radial-gradient(
@@ -45,7 +94,7 @@ st.markdown(
                 rgba(140,0,255,.08),
                 transparent 30%
             ),
-            #020402;
+            #020402 !important;
 
         color: white;
     }
@@ -59,15 +108,20 @@ st.markdown(
     }
 
     .block-container {
+
         max-width: 1000px !important;
+
         padding-top: 18px !important;
+
         padding-bottom: 10px !important;
     }
 
     .snake-title {
+
         text-align: center;
 
-        font-size: clamp(35px, 7vw, 65px);
+        font-size:
+            clamp(35px, 7vw, 65px);
 
         font-weight: 900;
 
@@ -87,13 +141,17 @@ st.markdown(
         background-size: 300% auto;
 
         -webkit-background-clip: text;
+
         -webkit-text-fill-color: transparent;
 
-        animation: titleGlow 5s linear infinite;
+        animation:
+            titleGlow 5s linear infinite;
 
         filter:
-            drop-shadow(0 0 10px rgba(57,255,20,.4))
-            drop-shadow(0 0 30px rgba(0,255,150,.15));
+            drop-shadow(
+                0 0 10px
+                rgba(57,255,20,.4)
+            );
     }
 
     @keyframes titleGlow {
@@ -105,10 +163,10 @@ st.markdown(
         100% {
             background-position: 300% center;
         }
-
     }
 
     .snake-subtitle {
+
         text-align: center;
 
         color: #6f8075;
@@ -123,17 +181,23 @@ st.markdown(
     }
 
     .online-badge {
+
         width: fit-content;
 
-        margin: 0 auto 14px auto;
+        margin:
+            0 auto 14px auto;
 
-        padding: 6px 14px;
+        padding:
+            6px 14px;
 
         border-radius: 100px;
 
-        border: 1px solid rgba(57,255,20,.3);
+        border:
+            1px solid
+            rgba(57,255,20,.3);
 
-        background: rgba(57,255,20,.05);
+        background:
+            rgba(57,255,20,.05);
 
         color: #62ff3e;
 
@@ -142,7 +206,8 @@ st.markdown(
         letter-spacing: 2px;
 
         box-shadow:
-            0 0 20px rgba(57,255,20,.08);
+            0 0 20px
+            rgba(57,255,20,.08);
     }
 
     </style>
@@ -150,27 +215,31 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+
 # ============================================================
 # HEADER
 # ============================================================
 
 st.markdown(
     '<div class="online-badge">● ONLINE WEB EDITION</div>',
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 st.markdown(
     '<div class="snake-title">🐍 PYTHON SNAKE</div>',
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )
 
 st.markdown(
-    '<div class="snake-subtitle">CLASSIC ARCADE • NEON EDITION</div>',
-    unsafe_allow_html=True
+    '<div class="snake-subtitle">'
+    'CLASSIC ARCADE • ULTIMATE NEON EDITION'
+    '</div>',
+    unsafe_allow_html=True,
 )
 
+
 # ============================================================
-# GAME HTML
+# GAME
 # ============================================================
 
 game_html = r"""
@@ -182,10 +251,19 @@ game_html = r"""
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-content="width=device-width, initial-scale=1.0">
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
+
+<title>Python Snake</title>
+
 
 <style>
+
+/* ============================================================
+   GLOBAL
+============================================================ */
 
 * {
     box-sizing: border-box;
@@ -195,6 +273,7 @@ html,
 body {
 
     margin: 0;
+
     padding: 0;
 
     width: 100%;
@@ -208,24 +287,27 @@ body {
         Helvetica,
         sans-serif;
 
-    overflow: hidden;
+    overflow-x: hidden;
+}
+
+body {
+    overflow-y: auto;
 }
 
 .game {
 
     width: 100%;
 
-    max-width: 680px;
+    max-width: 700px;
 
     margin: auto;
 
     padding: 5px;
-
 }
 
 
 /* ============================================================
-   HUD
+   TOP HUD
 ============================================================ */
 
 .hud {
@@ -233,9 +315,9 @@ body {
     display: grid;
 
     grid-template-columns:
-        repeat(3, 1fr);
+        repeat(4, 1fr);
 
-    gap: 9px;
+    gap: 8px;
 
     margin-bottom: 12px;
 }
@@ -259,16 +341,19 @@ body {
 
     border-radius: 14px;
 
-    padding: 11px;
+    padding: 10px 5px;
 
     text-align: center;
 
     box-shadow:
-        0 8px 30px rgba(0,0,0,.4),
+        0 8px 30px
+        rgba(0,0,0,.4),
+
         inset 0 1px 0
         rgba(255,255,255,.04);
 
-    backdrop-filter: blur(12px);
+    backdrop-filter:
+        blur(12px);
 }
 
 .card::after {
@@ -300,18 +385,18 @@ body {
 
     color: #617064;
 
-    font-size: 9px;
+    font-size: 8px;
 
     font-weight: 700;
 
-    letter-spacing: 2px;
+    letter-spacing: 1px;
 
     margin-bottom: 5px;
 }
 
 .card-value {
 
-    font-size: 22px;
+    font-size: 19px;
 
     font-weight: 900;
 
@@ -339,7 +424,8 @@ body {
 
     flex-wrap: wrap;
 
-    margin: 0 auto 12px;
+    margin:
+        0 auto 10px;
 
     color: #68766c;
 
@@ -376,10 +462,6 @@ body {
     outline: none;
 
     cursor: pointer;
-
-    box-shadow:
-        0 0 15px
-        rgba(57,255,20,.04);
 }
 
 .level-selector select:hover {
@@ -401,14 +483,71 @@ body {
 
 
 /* ============================================================
-   GAME BOARD
+   DIFFICULTY
+============================================================ */
+
+.difficulty {
+
+    display: flex;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+
+    margin-bottom: 12px;
+}
+
+.diff-btn {
+
+    padding:
+        7px 10px;
+
+    border-radius: 8px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.08);
+
+    background:
+        rgba(255,255,255,.03);
+
+    color: #728076;
+
+    cursor: pointer;
+
+    font-size: 8px;
+
+    font-weight: bold;
+}
+
+.diff-btn.active {
+
+    color: #65ff45;
+
+    border-color:
+        rgba(57,255,20,.4);
+
+    background:
+        rgba(57,255,20,.07);
+
+    box-shadow:
+        0 0 15px
+        rgba(57,255,20,.08);
+}
+
+
+/* ============================================================
+   BOARD
 ============================================================ */
 
 .board-wrap {
 
     position: relative;
 
-    width: min(92vw, 620px);
+    width:
+        min(94vw, 620px);
 
     aspect-ratio: 1 / 1;
 
@@ -443,6 +582,7 @@ canvas {
     display: block;
 
     width: 100%;
+
     height: 100%;
 
     border-radius: 16px;
@@ -477,13 +617,16 @@ canvas {
     border-radius: 16px;
 
     background:
-        rgba(0,0,0,.55);
+        rgba(0,0,0,.62);
 
-    backdrop-filter: blur(5px);
+    backdrop-filter:
+        blur(7px);
 
     transition: .25s;
 
     pointer-events: none;
+
+    text-align: center;
 }
 
 .overlay.hidden {
@@ -496,7 +639,7 @@ canvas {
 .overlay-title {
 
     font-size:
-        clamp(26px, 7vw, 46px);
+        clamp(25px, 7vw, 46px);
 
     font-weight: 900;
 
@@ -511,11 +654,11 @@ canvas {
 
 .overlay-text {
 
-    margin-top: 7px;
+    margin-top: 8px;
 
     color: #7c8b80;
 
-    font-size: 11px;
+    font-size: 10px;
 
     letter-spacing: 2px;
 }
@@ -527,13 +670,13 @@ canvas {
 
 .message {
 
-    min-height: 25px;
+    min-height: 24px;
 
     text-align: center;
 
-    margin-top: 10px;
+    margin-top: 9px;
 
-    font-size: 12px;
+    font-size: 11px;
 
     font-weight: 700;
 
@@ -544,7 +687,7 @@ canvas {
 
 
 /* ============================================================
-   BUTTONS
+   ACTION BUTTONS
 ============================================================ */
 
 .actions {
@@ -553,9 +696,9 @@ canvas {
 
     justify-content: center;
 
-    gap: 8px;
+    gap: 7px;
 
-    margin-top: 7px;
+    margin-top: 6px;
 
     flex-wrap: wrap;
 }
@@ -577,9 +720,10 @@ button {
 
     border-radius: 10px;
 
-    padding: 10px 17px;
+    padding:
+        9px 14px;
 
-    font-size: 11px;
+    font-size: 10px;
 
     font-weight: 800;
 
@@ -590,8 +734,7 @@ button {
     transition:
         transform .15s,
         border .15s,
-        box-shadow .15s,
-        background .15s;
+        box-shadow .15s;
 }
 
 button:hover {
@@ -602,13 +745,6 @@ button:hover {
     box-shadow:
         0 0 20px
         rgba(57,255,20,.12);
-
-    background:
-        linear-gradient(
-            145deg,
-            #1b291d,
-            #091009
-        );
 }
 
 button:active {
@@ -671,6 +807,59 @@ button:active {
 
 
 /* ============================================================
+   SETTINGS
+============================================================ */
+
+.settings {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 6px;
+
+    margin:
+        13px auto 0;
+
+    max-width: 520px;
+}
+
+.setting {
+
+    padding: 8px;
+
+    border-radius: 9px;
+
+    border:
+        1px solid
+        rgba(255,255,255,.06);
+
+    background:
+        rgba(255,255,255,.02);
+
+    text-align: center;
+
+    color: #718077;
+
+    font-size: 8px;
+}
+
+.setting button {
+
+    width: 100%;
+
+    margin-top: 5px;
+
+    padding: 6px;
+
+    font-size: 8px;
+
+    color: #73ff59;
+}
+
+
+/* ============================================================
    HELP
 ============================================================ */
 
@@ -682,7 +871,7 @@ button:active {
 
     color: #4d5c51;
 
-    font-size: 9px;
+    font-size: 8px;
 
     letter-spacing: 1px;
 }
@@ -707,29 +896,136 @@ button:active {
 
 
 /* ============================================================
+   LIGHT THEME
+============================================================ */
+
+body.light {
+
+    color: #172019;
+}
+
+body.light .card {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.95),
+            rgba(235,240,237,.96)
+        );
+
+    border-color:
+        rgba(0,0,0,.12);
+}
+
+body.light .card-label {
+
+    color: #66736a;
+}
+
+body.light .card-value {
+
+    color: #102015;
+}
+
+body.light .board-wrap {
+
+    background:
+        linear-gradient(
+            135deg,
+            #cbd5d0,
+            #edf3ef,
+            #b8c5bd
+        );
+}
+
+body.light .message {
+
+    color: #536158;
+}
+
+
+/* ============================================================
+   NEON THEME
+============================================================ */
+
+body.neon .card {
+
+    background:
+        linear-gradient(
+            145deg,
+            rgba(20,5,40,.95),
+            rgba(5,5,25,.98)
+        );
+
+    border-color:
+        rgba(255,0,255,.2);
+}
+
+body.neon .card::after {
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            #ff00ff,
+            #00ffff,
+            transparent
+        );
+}
+
+body.neon .board-wrap {
+
+    background:
+        linear-gradient(
+            135deg,
+            #301050,
+            #050520,
+            #102c40
+        );
+}
+
+body.neon .level-selector select {
+
+    border-color:
+        rgba(0,255,255,.35);
+
+    color: #00ffff;
+}
+
+
+/* ============================================================
    MOBILE
 ============================================================ */
 
 @media(max-width: 500px) {
 
     .hud {
+
+        grid-template-columns:
+            repeat(2, 1fr);
+
         gap: 5px;
     }
 
     .card {
+
         padding: 8px 4px;
     }
 
     .card-value {
-        font-size: 18px;
+
+        font-size: 17px;
     }
 
     .card-label {
+
         font-size: 7px;
     }
 
-    .actions button {
-        padding: 9px 12px;
+    .settings {
+
+        grid-template-columns:
+            1fr 1fr 1fr;
     }
 
 }
@@ -738,260 +1034,359 @@ button:active {
 
 </head>
 
+
 <body>
+
 
 <div class="game">
 
 
-    <!-- =====================================================
-         HUD
-    ====================================================== -->
+<!-- ============================================================
+     HUD
+============================================================ -->
 
-    <div class="hud">
+<div class="hud">
 
-        <div class="card">
+    <div class="card">
 
-            <div class="card-label">
-                SCORE
-            </div>
-
-            <div
-                class="card-value"
-                id="score">
-                0
-            </div>
-
+        <div class="card-label">
+            SCORE
         </div>
-
-
-        <div class="card">
-
-            <div class="card-label">
-                HIGH SCORE
-            </div>
-
-            <div
-                class="card-value"
-                id="highscore">
-                0
-            </div>
-
-        </div>
-
-
-        <div class="card">
-
-            <div class="card-label">
-                LEVEL
-            </div>
-
-            <div
-                class="card-value"
-                id="level">
-                1
-            </div>
-
-        </div>
-
-    </div>
-
-
-    <!-- =====================================================
-         LEVEL SELECTOR
-    ====================================================== -->
-
-    <div class="level-selector">
-
-        <span>
-            🎯 SELECT LEVEL
-        </span>
-
-        <select
-            id="levelSelect"
-            onchange="changeLevel(this.value)"
-        >
-
-            <option value="1">
-                🟢 LEVEL 1 — EASY
-            </option>
-
-            <option value="2">
-                🟡 LEVEL 2 — NORMAL
-            </option>
-
-            <option value="3">
-                🟠 LEVEL 3 — HARD
-            </option>
-
-            <option value="4">
-                🔴 LEVEL 4 — EXTREME
-            </option>
-
-            <option value="5">
-                💀 LEVEL 5 — INSANE
-            </option>
-
-        </select>
-
-    </div>
-
-
-    <!-- =====================================================
-         BOARD
-    ====================================================== -->
-
-    <div class="board-wrap">
-
-        <canvas id="game"></canvas>
-
 
         <div
-            class="overlay"
-            id="overlay">
-
-            <div
-                class="overlay-title"
-                id="overlayTitle">
-
-                🐍 SNAKE
-
-            </div>
-
-            <div
-                class="overlay-text"
-                id="overlayText">
-
-                PRESS START TO PLAY
-
-            </div>
-
+            class="card-value"
+            id="score">
+            0
         </div>
 
     </div>
 
 
-    <!-- =====================================================
-         MESSAGE
-    ====================================================== -->
+    <div class="card">
 
-    <div
-        class="message"
-        id="message">
+        <div class="card-label">
+            HIGH SCORE
+        </div>
 
-        Ready?
-
-    </div>
-
-
-    <!-- =====================================================
-         ACTION BUTTONS
-    ====================================================== -->
-
-    <div class="actions">
-
-        <button
-            class="primary"
-            onclick="startGame()">
-
-            ▶ START
-
-        </button>
-
-
-        <button
-            onclick="togglePause()">
-
-            ⏸ PAUSE
-
-        </button>
-
-
-        <button
-            onclick="restartGame()">
-
-            ↻ RESTART
-
-        </button>
+        <div
+            class="card-value"
+            id="highscore">
+            120
+        </div>
 
     </div>
 
 
-    <!-- =====================================================
-         MOBILE CONTROLS
-    ====================================================== -->
+    <div class="card">
 
-    <div class="controls">
+        <div class="card-label">
+            LEVEL
+        </div>
 
-        <button
-            class="control empty">
-        </button>
-
-
-        <button
-            class="control"
-            onclick="changeDirection(0,-1)">
-
-            ▲
-
-        </button>
-
-
-        <button
-            class="control empty">
-        </button>
-
-
-        <button
-            class="control"
-            onclick="changeDirection(-1,0)">
-
-            ◀
-
-        </button>
-
-
-        <button
-            class="control"
-            onclick="changeDirection(0,1)">
-
-            ▼
-
-        </button>
-
-
-        <button
-            class="control"
-            onclick="changeDirection(1,0)">
-
-            ▶
-
-        </button>
+        <div
+            class="card-value"
+            id="level">
+            1
+        </div>
 
     </div>
 
 
-    <div class="help">
+    <div class="card">
 
-        ARROW KEYS / WASD
-        •
-        SPACE = PAUSE
+        <div class="card-label">
+            SPEED
+        </div>
 
-    </div>
-
-
-    <div class="footer">
-
-        PYTHON SNAKE • WEB ARCADE
+        <div
+            class="card-value"
+            id="speed">
+            1x
+        </div>
 
     </div>
 
 </div>
 
 
+<!-- ============================================================
+     LEVEL SELECTOR
+============================================================ -->
+
+<div class="level-selector">
+
+    <span>
+        🎯 LEVEL
+    </span>
+
+    <select id="levelSelect">
+
+        <option value="1">
+            🟢 LEVEL 1 — EASY
+        </option>
+
+        <option value="2">
+            🟡 LEVEL 2 — NORMAL
+        </option>
+
+        <option value="3">
+            🟠 LEVEL 3 — HARD
+        </option>
+
+        <option value="4">
+            🔴 LEVEL 4 — EXTREME
+        </option>
+
+        <option value="5">
+            💀 LEVEL 5 — INSANE
+        </option>
+
+    </select>
+
+</div>
+
+
+<!-- ============================================================
+     DIFFICULTY
+============================================================ -->
+
+<div class="difficulty">
+
+    <button
+        class="diff-btn active"
+        data-diff="Easy">
+
+        EASY
+
+    </button>
+
+    <button
+        class="diff-btn"
+        data-diff="Normal">
+
+        NORMAL
+
+    </button>
+
+    <button
+        class="diff-btn"
+        data-diff="Hard">
+
+        HARD
+
+    </button>
+
+    <button
+        class="diff-btn"
+        data-diff="Extreme">
+
+        EXTREME
+
+    </button>
+
+</div>
+
+
+<!-- ============================================================
+     BOARD
+============================================================ -->
+
+<div class="board-wrap">
+
+    <canvas id="game"></canvas>
+
+
+    <div
+        class="overlay"
+        id="overlay">
+
+        <div
+            class="overlay-title"
+            id="overlayTitle">
+
+            🐍 PYTHON SNAKE
+
+        </div>
+
+        <div
+            class="overlay-text"
+            id="overlayText">
+
+            SELECT LEVEL AND PRESS START
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================
+     MESSAGE
+============================================================ -->
+
+<div
+    class="message"
+    id="message">
+
+    Ready?
+
+</div>
+
+
+<!-- ============================================================
+     ACTIONS
+============================================================ -->
+
+<div class="actions">
+
+    <button
+        class="primary"
+        id="startBtn">
+
+        ▶ START
+
+    </button>
+
+
+    <button id="pauseBtn">
+
+        ⏸ PAUSE
+
+    </button>
+
+
+    <button id="restartBtn">
+
+        ↻ RESTART
+
+    </button>
+
+</div>
+
+
+<!-- ============================================================
+     MOBILE CONTROLS
+============================================================ -->
+
+<div class="controls">
+
+    <button
+        class="control empty">
+    </button>
+
+
+    <button
+        class="control"
+        data-dir="up">
+
+        ▲
+
+    </button>
+
+
+    <button
+        class="control empty">
+    </button>
+
+
+    <button
+        class="control"
+        data-dir="left">
+
+        ◀
+
+    </button>
+
+
+    <button
+        class="control"
+        data-dir="down">
+
+        ▼
+
+    </button>
+
+
+    <button
+        class="control"
+        data-dir="right">
+
+        ▶
+
+    </button>
+
+</div>
+
+
+<!-- ============================================================
+     SETTINGS
+============================================================ -->
+
+<div class="settings">
+
+
+    <div class="setting">
+
+        GRID
+
+        <button id="gridBtn">
+            ON
+        </button>
+
+    </div>
+
+
+    <div class="setting">
+
+        SOUND
+
+        <button id="soundBtn">
+            ON
+        </button>
+
+    </div>
+
+
+    <div class="setting">
+
+        THEME
+
+        <button id="themeBtn">
+            DARK
+        </button>
+
+    </div>
+
+</div>
+
+
+<div class="help">
+
+    W A S D / ARROW KEYS
+    •
+    SPACE = PAUSE
+    •
+    ESC = STOP
+
+</div>
+
+
+<div class="footer">
+
+    PYTHON SNAKE • WEB ARCADE
+
+</div>
+
+
+</div>
+
+
 <script>
 
+
 /* ============================================================
-   CANVAS
+   CANVAS CONFIG
 ============================================================ */
 
 const canvas =
@@ -1001,37 +1396,129 @@ const ctx =
     canvas.getContext("2d");
 
 
-const GRID = 25;
+const GRID_WIDTH = 25;
 
-const cellSize = 24;
+const GRID_HEIGHT = 25;
+
+const CELL_SIZE = 24;
 
 canvas.width =
-    GRID * cellSize;
+    GRID_WIDTH * CELL_SIZE;
 
 canvas.height =
-    GRID * cellSize;
+    GRID_HEIGHT * CELL_SIZE;
 
 
 /* ============================================================
-   VARIABLES
+   STORAGE
 ============================================================ */
 
-let snake;
+const STORAGE_KEY =
+    "pythonSnakeSettings";
 
-let food;
+const HIGH_SCORE_KEY =
+    "pythonSnakeHighScore";
 
-let direction;
 
-let nextDirection;
+/*
+    Original supplied highscore.json:
 
-let score = 0;
+    {
+        "high_score": 120
+    }
+
+    Therefore first-time browser score starts at 120.
+*/
 
 let highScore =
     Number(
         localStorage.getItem(
-            "pythonSnakeHighScore"
-        ) || 0
+            HIGH_SCORE_KEY
+        )
     );
+
+if (
+    !Number.isFinite(highScore) ||
+    highScore < 120
+) {
+
+    highScore = 120;
+
+    localStorage.setItem(
+        HIGH_SCORE_KEY,
+        highScore
+    );
+}
+
+
+/* ============================================================
+   SETTINGS
+============================================================ */
+
+const defaultSettings = {
+
+    difficulty: "Normal",
+
+    grid: true,
+
+    sound: true,
+
+    theme: "Dark"
+};
+
+
+let settings;
+
+
+try {
+
+    settings =
+        JSON.parse(
+            localStorage.getItem(
+                STORAGE_KEY
+            )
+        ) || defaultSettings;
+
+}
+catch (error) {
+
+    settings =
+        {...defaultSettings};
+}
+
+
+function saveSettings() {
+
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify(settings)
+    );
+}
+
+
+/* ============================================================
+   GAME VARIABLES
+============================================================ */
+
+let snake = [];
+
+let food = null;
+
+let direction = {
+
+    x: 1,
+
+    y: 0
+};
+
+let nextDirection = {
+
+    x: 1,
+
+    y: 0
+};
+
+let score = 0;
 
 let selectedLevel = 1;
 
@@ -1045,90 +1532,303 @@ let gameOver = false;
 
 let timer = null;
 
+let countdownTimer = null;
+
 let foodPulse = 0;
+
+let audioContext = null;
 
 
 /* ============================================================
-   ELEMENTS
+   DIFFICULTY SPEEDS
+============================================================ */
+
+/*
+    Original settings.py speeds:
+
+    Easy     = 140
+    Normal   = 100
+    Hard     = 70
+    Extreme  = 45
+*/
+
+const difficultySpeeds = {
+
+    Easy: 140,
+
+    Normal: 100,
+
+    Hard: 70,
+
+    Extreme: 45
+};
+
+
+/* ============================================================
+   LEVEL SPEEDS
+============================================================ */
+
+const levelSpeeds = {
+
+    1: 180,
+
+    2: 140,
+
+    3: 105,
+
+    4: 75,
+
+    5: 48
+};
+
+
+/* ============================================================
+   FOOD TYPES
+============================================================ */
+
+/*
+    Original food.py:
+
+    Normal = 70% = +10
+    Bonus  = 20% = +25
+    Rare   = 10% = +50
+*/
+
+const foodTypes = [
+
+    {
+        type: "normal",
+
+        points: 10,
+
+        chance: 0.70
+    },
+
+    {
+        type: "bonus",
+
+        points: 25,
+
+        chance: 0.20
+    },
+
+    {
+        type: "rare",
+
+        points: 50,
+
+        chance: 0.10
+    }
+];
+
+
+/* ============================================================
+   DOM ELEMENTS
 ============================================================ */
 
 const scoreEl =
-    document.getElementById("score");
+    document.getElementById(
+        "score"
+    );
 
 const highScoreEl =
-    document.getElementById("highscore");
+    document.getElementById(
+        "highscore"
+    );
 
 const levelEl =
-    document.getElementById("level");
+    document.getElementById(
+        "level"
+    );
+
+const speedEl =
+    document.getElementById(
+        "speed"
+    );
 
 const messageEl =
-    document.getElementById("message");
+    document.getElementById(
+        "message"
+    );
 
 const overlay =
-    document.getElementById("overlay");
+    document.getElementById(
+        "overlay"
+    );
 
 const overlayTitle =
-    document.getElementById("overlayTitle");
+    document.getElementById(
+        "overlayTitle"
+    );
 
 const overlayText =
-    document.getElementById("overlayText");
+    document.getElementById(
+        "overlayText"
+    );
 
 const levelSelect =
-    document.getElementById("levelSelect");
+    document.getElementById(
+        "levelSelect"
+    );
 
+const gridBtn =
+    document.getElementById(
+        "gridBtn"
+    );
 
-highScoreEl.textContent =
-    highScore;
+const soundBtn =
+    document.getElementById(
+        "soundBtn"
+    );
+
+const themeBtn =
+    document.getElementById(
+        "themeBtn"
+    );
 
 
 /* ============================================================
-   LEVEL CHANGE
+   SOUND
 ============================================================ */
 
-function changeLevel(value) {
+function playSound(type) {
 
-    if (running) {
+    if (!settings.sound)
+        return;
 
-        setMessage(
-            "⏸ STOP / RESTART GAME TO CHANGE LEVEL"
+
+    try {
+
+        if (!audioContext) {
+
+            audioContext =
+                new (
+                    window.AudioContext ||
+                    window.webkitAudioContext
+                )();
+        }
+
+
+        const oscillator =
+            audioContext.createOscillator();
+
+        const gain =
+            audioContext.createGain();
+
+
+        const frequencies = {
+
+            click: 600,
+
+            eat: 750,
+
+            levelup: 1100,
+
+            gameover: 180
+        };
+
+
+        oscillator.frequency.value =
+            frequencies[type] || 600;
+
+
+        oscillator.type =
+            "square";
+
+
+        gain.gain.setValueAtTime(
+            0.035,
+            audioContext.currentTime
         );
 
-        levelSelect.value =
-            selectedLevel;
 
-        return;
+        gain.gain.exponentialRampToValueAtTime(
+            0.001,
+            audioContext.currentTime + 0.08
+        );
+
+
+        oscillator.connect(gain);
+
+        gain.connect(
+            audioContext.destination
+        );
+
+
+        oscillator.start();
+
+        oscillator.stop(
+            audioContext.currentTime + 0.08
+        );
+
+    }
+    catch (error) {
+
+        // Sound is optional.
+    }
+}
+
+
+/* ============================================================
+   APPLY SETTINGS
+============================================================ */
+
+function applySettings() {
+
+    document.body.classList.remove(
+        "light",
+        "neon"
+    );
+
+
+    if (
+        settings.theme === "Light"
+    ) {
+
+        document.body.classList.add(
+            "light"
+        );
+
+    }
+
+    else if (
+        settings.theme === "Neon"
+    ) {
+
+        document.body.classList.add(
+            "neon"
+        );
     }
 
 
-    selectedLevel =
-        Number(value);
-
-    level =
-        selectedLevel;
-
-
-    updateStats();
+    gridBtn.textContent =
+        settings.grid
+            ? "ON"
+            : "OFF";
 
 
-    const names = {
-
-        1: "🟢 EASY",
-
-        2: "🟡 NORMAL",
-
-        3: "🟠 HARD",
-
-        4: "🔴 EXTREME",
-
-        5: "💀 INSANE"
-
-    };
+    soundBtn.textContent =
+        settings.sound
+            ? "ON"
+            : "OFF";
 
 
-    setMessage(
-        "Selected: " +
-        names[selectedLevel]
-    );
+    themeBtn.textContent =
+        settings.theme.toUpperCase();
+
+
+    document
+        .querySelectorAll(".diff-btn")
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "active",
+                    button.dataset.diff ===
+                    settings.difficulty
+                );
+            }
+        );
 }
 
 
@@ -1140,13 +1840,25 @@ function initializeGame() {
 
     snake = [
 
-        {x: 12, y: 12},
+        {
+            x: 12,
+            y: 12
+        },
 
-        {x: 11, y: 12},
+        {
+            x: 11,
+            y: 12
+        },
 
-        {x: 10, y: 12},
+        {
+            x: 10,
+            y: 12
+        },
 
-        {x: 9, y: 12}
+        {
+            x: 9,
+            y: 12
+        }
 
     ];
 
@@ -1156,7 +1868,6 @@ function initializeGame() {
         x: 1,
 
         y: 0
-
     };
 
 
@@ -1165,7 +1876,6 @@ function initializeGame() {
         x: 1,
 
         y: 0
-
     };
 
 
@@ -1173,6 +1883,7 @@ function initializeGame() {
 
     level =
         selectedLevel;
+
 
     running = false;
 
@@ -1189,7 +1900,7 @@ function initializeGame() {
 
 
     showOverlay(
-        "🐍 SNAKE",
+        "🐍 PYTHON SNAKE",
         "LEVEL " +
         selectedLevel +
         " • PRESS START"
@@ -1203,7 +1914,7 @@ function initializeGame() {
 
 
 /* ============================================================
-   FOOD
+   FOOD SPAWN
 ============================================================ */
 
 function spawnFood() {
@@ -1214,26 +1925,60 @@ function spawnFood() {
 
             x:
                 Math.floor(
-                    Math.random() * GRID
+                    Math.random() *
+                    GRID_WIDTH
                 ),
 
             y:
                 Math.floor(
-                    Math.random() * GRID
-                )
+                    Math.random() *
+                    GRID_HEIGHT
+                ),
+
+            type: "normal",
+
+            points: 10
         };
 
     }
-
     while (
-
         snake.some(
             part =>
                 part.x === food.x &&
                 part.y === food.y
         )
-
     );
+
+
+    const random =
+        Math.random();
+
+
+    let cumulative = 0;
+
+
+    for (
+        const foodType
+        of foodTypes
+    ) {
+
+        cumulative +=
+            foodType.chance;
+
+
+        if (
+            random <= cumulative
+        ) {
+
+            food.type =
+                foodType.type;
+
+            food.points =
+                foodType.points;
+
+            break;
+        }
+    }
 }
 
 
@@ -1250,7 +1995,6 @@ function startGame() {
     if (gameOver) {
 
         initializeGame();
-
     }
 
 
@@ -1258,15 +2002,72 @@ function startGame() {
 
     paused = false;
 
+    gameOver = false;
+
+
     hideOverlay();
+
 
     setMessage(
         "🔥 LEVEL " +
         selectedLevel +
-        " STARTED"
+        " • " +
+        settings.difficulty.toUpperCase()
     );
 
-    scheduleNextMove();
+
+    countdown(
+        3
+    );
+}
+
+
+/* ============================================================
+   COUNTDOWN
+============================================================ */
+
+function countdown(number) {
+
+    if (!running)
+        return;
+
+
+    if (number > 0) {
+
+        showOverlay(
+            String(number),
+            "GET READY..."
+        );
+
+
+        playSound("click");
+
+
+        countdownTimer =
+            setTimeout(
+                () => {
+
+                    countdown(
+                        number - 1
+                    );
+
+                },
+                650
+            );
+
+
+        return;
+    }
+
+
+    hideOverlay();
+
+    setMessage(
+        "GO! 🐍"
+    );
+
+
+    gameLoop();
 }
 
 
@@ -1292,12 +2093,24 @@ function stopGame() {
 
     running = false;
 
+    paused = false;
+
 
     if (timer) {
 
         clearTimeout(timer);
 
         timer = null;
+    }
+
+
+    if (countdownTimer) {
+
+        clearTimeout(
+            countdownTimer
+        );
+
+        countdownTimer = null;
     }
 }
 
@@ -1308,8 +2121,13 @@ function stopGame() {
 
 function togglePause() {
 
-    if (!running || gameOver)
+    if (
+        !running ||
+        gameOver
+    ) {
+
         return;
+    }
 
 
     paused =
@@ -1328,12 +2146,17 @@ function togglePause() {
 
         showOverlay(
             "⏸ PAUSED",
-            "PRESS SPACE TO CONTINUE"
+            "PRESS SPACE TO RESUME"
         );
 
 
         setMessage(
             "Game paused"
+        );
+
+
+        playSound(
+            "click"
         );
 
     }
@@ -1342,11 +2165,13 @@ function togglePause() {
 
         hideOverlay();
 
+
         setMessage(
             "▶ RESUMED"
         );
 
-        scheduleNextMove();
+
+        gameLoop();
     }
 }
 
@@ -1355,11 +2180,23 @@ function togglePause() {
    DIRECTION
 ============================================================ */
 
-function changeDirection(x,y) {
+function changeDirection(
+    x,
+    y
+) {
 
-    if (!running || gameOver)
+    if (
+        !running ||
+        gameOver
+    ) {
+
         return;
+    }
 
+
+    /*
+        Prevent 180° turn.
+    */
 
     if (
         x === -direction.x &&
@@ -1375,7 +2212,6 @@ function changeDirection(x,y) {
         x: x,
 
         y: y
-
     };
 }
 
@@ -1449,12 +2285,29 @@ document.addEventListener(
 
 
         else if (
-            key === " "
+            event.code ===
+            "Space"
         ) {
 
             event.preventDefault();
 
             togglePause();
+        }
+
+
+        else if (
+            key === "escape"
+        ) {
+
+            stopGame();
+
+
+            initializeGame();
+
+
+            setMessage(
+                "Stopped • Select a level and press START"
+            );
         }
 
     }
@@ -1465,7 +2318,7 @@ document.addEventListener(
    GAME LOOP
 ============================================================ */
 
-function scheduleNextMove() {
+function gameLoop() {
 
     if (
         !running ||
@@ -1477,38 +2330,72 @@ function scheduleNextMove() {
     }
 
 
-    const speeds = {
+    update();
 
-        1: 180,
+    draw();
 
-        2: 130,
 
-        3: 90,
+    if (
+        !gameOver
+    ) {
 
-        4: 65,
+        const speed =
+            getCurrentSpeed();
 
-        5: 45
 
-    };
+        timer =
+            setTimeout(
+                gameLoop,
+                speed
+            );
+    }
+}
 
+
+/* ============================================================
+   SPEED
+============================================================ */
+
+function getCurrentSpeed() {
+
+    /*
+        Combine selected difficulty
+        with selected level.
+
+        This keeps the original
+        difficulty system while
+        adding Level 1-5.
+    */
+
+    const difficultyBase =
+        difficultySpeeds[
+            settings.difficulty
+        ] || 100;
+
+
+    const levelSpeed =
+        levelSpeeds[
+            selectedLevel
+        ] || 100;
+
+
+    /*
+        Blend both systems.
+    */
 
     const speed =
-        speeds[selectedLevel];
-
-
-    timer =
-        setTimeout(
-            function() {
-
-                update();
-
-                draw();
-
-                scheduleNextMove();
-
-            },
-            speed
+        Math.round(
+            (
+                difficultyBase +
+                levelSpeed
+            ) / 2
         );
+
+
+    return Math.max(
+        30,
+        speed
+    );
 }
 
 
@@ -1517,6 +2404,16 @@ function scheduleNextMove() {
 ============================================================ */
 
 function update() {
+
+    if (
+        !running ||
+        paused ||
+        gameOver
+    ) {
+
+        return;
+    }
+
 
     direction =
         nextDirection;
@@ -1531,31 +2428,34 @@ function update() {
         y:
             snake[0].y +
             direction.y
-
     };
 
 
-    /* WALL COLLISION */
+    /*
+        WALL COLLISION
+    */
 
     if (
 
         head.x < 0 ||
 
-        head.x >= GRID ||
+        head.x >= GRID_WIDTH ||
 
         head.y < 0 ||
 
-        head.y >= GRID
+        head.y >= GRID_HEIGHT
 
     ) {
 
-        endGame();
+        triggerGameOver();
 
         return;
     }
 
 
-    /* SELF COLLISION */
+    /*
+        SELF COLLISION
+    */
 
     if (
 
@@ -1567,16 +2467,24 @@ function update() {
 
     ) {
 
-        endGame();
+        triggerGameOver();
 
         return;
     }
 
 
-    snake.unshift(head);
+    /*
+        MOVE
+    */
+
+    snake.unshift(
+        head
+    );
 
 
-    /* FOOD */
+    /*
+        FOOD
+    */
 
     if (
 
@@ -1586,35 +2494,102 @@ function update() {
 
     ) {
 
-        score++;
+        score +=
+            food.points;
 
 
-        if (score > highScore) {
+        /*
+            High score
+        */
+
+        if (
+            score > highScore
+        ) {
 
             highScore =
                 score;
 
 
             localStorage.setItem(
-                "pythonSnakeHighScore",
-                highScore
+                HIGH_SCORE_KEY,
+                String(highScore)
             );
         }
 
 
+        playSound(
+            "eat"
+        );
+
+
+        /*
+            Food gives
+            automatic growth.
+        */
+
+        /*
+            Do NOT remove tail
+            this turn.
+        */
+
+
         spawnFood();
 
+
+        /*
+            Dynamic level display
+            based on score.
+
+            But selected level
+            remains the main speed mode.
+        */
+
+        const newLevel =
+            Math.max(
+                selectedLevel,
+                Math.floor(
+                    score / 50
+                ) + selectedLevel
+            );
+
+
+        if (
+            newLevel > level
+        ) {
+
+            level =
+                newLevel;
+
+
+            playSound(
+                "levelup"
+            );
+
+
+            setMessage(
+                "🚀 LEVEL UP! LEVEL " +
+                level
+            );
+        }
+
+        else {
+
+            setMessage(
+                getFoodMessage()
+            );
+        }
+
+
         updateStats();
-
-
-        setMessage(
-            "🍎 FOOD +1 • LEVEL " +
-            selectedLevel
-        );
 
     }
 
     else {
+
+        /*
+            Normal movement:
+            remove tail.
+        */
 
         snake.pop();
     }
@@ -1622,10 +2597,36 @@ function update() {
 
 
 /* ============================================================
+   FOOD MESSAGE
+============================================================ */
+
+function getFoodMessage() {
+
+    if (
+        food.type === "bonus"
+    ) {
+
+        return "🟡 BONUS FOOD • +25";
+    }
+
+
+    if (
+        food.type === "rare"
+    ) {
+
+        return "🔵 RARE FOOD • +50";
+    }
+
+
+    return "🍎 NORMAL FOOD • +10";
+}
+
+
+/* ============================================================
    GAME OVER
 ============================================================ */
 
-function endGame() {
+function triggerGameOver() {
 
     running = false;
 
@@ -1640,12 +2641,17 @@ function endGame() {
     }
 
 
+    playSound(
+        "gameover"
+    );
+
+
     showOverlay(
         "💀 GAME OVER",
         "SCORE: " +
         score +
         " • LEVEL: " +
-        selectedLevel
+        level
     );
 
 
@@ -1653,6 +2659,8 @@ function endGame() {
         "Press RESTART to try again"
     );
 
+
+    updateStats();
 
     draw();
 }
@@ -1667,11 +2675,37 @@ function updateStats() {
     scoreEl.textContent =
         score;
 
+
     highScoreEl.textContent =
         highScore;
 
+
     levelEl.textContent =
-        selectedLevel;
+        level;
+
+
+    const currentSpeed =
+        getCurrentSpeed();
+
+
+    /*
+        Convert milliseconds
+        into an easy speed value.
+    */
+
+    const speedValue =
+        Math.max(
+            1,
+            Math.round(
+                200 /
+                currentSpeed
+            )
+        );
+
+
+    speedEl.textContent =
+        speedValue +
+        "x";
 }
 
 
@@ -1679,7 +2713,9 @@ function updateStats() {
    MESSAGE
 ============================================================ */
 
-function setMessage(text) {
+function setMessage(
+    text
+) {
 
     messageEl.textContent =
         text;
@@ -1729,7 +2765,9 @@ function draw() {
     );
 
 
-    /* BACKGROUND */
+    /*
+        Background
+    */
 
     const gradient =
         ctx.createRadialGradient(
@@ -1766,49 +2804,62 @@ function draw() {
     );
 
 
-    /* GRID */
+    /*
+        GRID
+    */
 
-    ctx.strokeStyle =
-        "rgba(80,120,85,.10)";
-
-    ctx.lineWidth = 1;
-
-
-    for (
-        let x = 0;
-        x <= canvas.width;
-        x += cellSize
+    if (
+        settings.grid
     ) {
 
-        ctx.beginPath();
+        ctx.strokeStyle =
+            "rgba(80,120,85,.10)";
 
-        ctx.moveTo(x,0);
-
-        ctx.lineTo(
-            x,
-            canvas.height
-        );
-
-        ctx.stroke();
-    }
+        ctx.lineWidth = 1;
 
 
-    for (
-        let y = 0;
-        y <= canvas.height;
-        y += cellSize
-    ) {
+        for (
+            let x = 0;
+            x <= canvas.width;
+            x += CELL_SIZE
+        ) {
 
-        ctx.beginPath();
+            ctx.beginPath();
 
-        ctx.moveTo(0,y);
+            ctx.moveTo(
+                x,
+                0
+            );
 
-        ctx.lineTo(
-            canvas.width,
-            y
-        );
+            ctx.lineTo(
+                x,
+                canvas.height
+            );
 
-        ctx.stroke();
+            ctx.stroke();
+        }
+
+
+        for (
+            let y = 0;
+            y <= canvas.height;
+            y += CELL_SIZE
+        ) {
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                0,
+                y
+            );
+
+            ctx.lineTo(
+                canvas.width,
+                y
+            );
+
+            ctx.stroke();
+        }
     }
 
 
@@ -1828,29 +2879,57 @@ function drawFood() {
         return;
 
 
-    foodPulse += .08;
+    foodPulse +=
+        0.08;
 
 
     const fx =
-        food.x * cellSize +
-        cellSize / 2;
+        food.x *
+        CELL_SIZE +
+        CELL_SIZE / 2;
 
 
     const fy =
-        food.y * cellSize +
-        cellSize / 2;
+        food.y *
+        CELL_SIZE +
+        CELL_SIZE / 2;
 
 
     const pulse =
-        Math.sin(foodPulse) * 2;
+        Math.sin(
+            foodPulse
+        ) * 2;
+
+
+    let color =
+        "#ff334f";
+
+
+    if (
+        food.type === "bonus"
+    ) {
+
+        color =
+            "#ffcc00";
+    }
+
+
+    else if (
+        food.type === "rare"
+    ) {
+
+        color =
+            "#00e5ff";
+    }
 
 
     ctx.shadowColor =
-        "#ff3b30";
+        color;
 
 
     ctx.shadowBlur =
-        18 + pulse;
+        18 +
+        pulse;
 
 
     ctx.beginPath();
@@ -1859,7 +2938,7 @@ function drawFood() {
     ctx.arc(
         fx,
         fy,
-        cellSize * .27 +
+        CELL_SIZE * .27 +
         pulse * .1,
         0,
         Math.PI * 2
@@ -1867,16 +2946,19 @@ function drawFood() {
 
 
     ctx.fillStyle =
-        "#ff3b30";
+        color;
 
 
     ctx.fill();
 
 
-    ctx.shadowBlur = 0;
+    ctx.shadowBlur =
+        0;
 
 
-    /* FOOD HIGHLIGHT */
+    /*
+        Highlight
+    */
 
     ctx.beginPath();
 
@@ -1905,7 +2987,10 @@ function drawFood() {
 function drawSnake() {
 
     snake.forEach(
-        function(part,index) {
+        function(
+            part,
+            index
+        ) {
 
             const padding =
                 index === 0
@@ -1914,21 +2999,29 @@ function drawSnake() {
 
 
             const x =
-                part.x * cellSize +
+                part.x *
+                CELL_SIZE +
                 padding;
 
 
             const y =
-                part.y * cellSize +
+                part.y *
+                CELL_SIZE +
                 padding;
 
 
             const size =
-                cellSize -
+                CELL_SIZE -
                 padding * 2;
 
 
-            if (index === 0) {
+            /*
+                HEAD
+            */
+
+            if (
+                index === 0
+            ) {
 
                 ctx.shadowColor =
                     "#39ff14";
@@ -1947,7 +3040,9 @@ function drawSnake() {
                 );
 
 
-            if (index === 0) {
+            if (
+                index === 0
+            ) {
 
                 gradient.addColorStop(
                     0,
@@ -1987,24 +3082,53 @@ function drawSnake() {
             ctx.beginPath();
 
 
-            ctx.roundRect(
-                x,
-                y,
-                size,
-                size,
-                index === 0
-                    ? 6
-                    : 4
-            );
+            /*
+                roundRect has
+                support in modern
+                browsers.
+            */
+
+            if (
+                ctx.roundRect
+            ) {
+
+                ctx.roundRect(
+                    x,
+                    y,
+                    size,
+                    size,
+                    index === 0
+                        ? 6
+                        : 4
+                );
+
+            }
+
+            else {
+
+                ctx.rect(
+                    x,
+                    y,
+                    size,
+                    size
+                );
+            }
 
 
             ctx.fill();
 
 
-            ctx.shadowBlur = 0;
+            ctx.shadowBlur =
+                0;
 
 
-            if (index === 0) {
+            /*
+                EYES
+            */
+
+            if (
+                index === 0
+            ) {
 
                 drawEyes(
                     part.x,
@@ -2021,54 +3145,83 @@ function drawSnake() {
    EYES
 ============================================================ */
 
-function drawEyes(x,y) {
+function drawEyes(
+    x,
+    y
+) {
 
     ctx.fillStyle =
         "#021000";
 
 
     const baseX =
-        x * cellSize;
+        x *
+        CELL_SIZE;
 
 
     const baseY =
-        y * cellSize;
+        y *
+        CELL_SIZE;
 
 
     let eyes;
 
 
-    if (direction.x > 0) {
+    if (
+        direction.x > 0
+    ) {
 
         eyes = [
 
-            [baseX+17,baseY+7],
+            [
+                baseX + 17,
+                baseY + 7
+            ],
 
-            [baseX+17,baseY+17]
+            [
+                baseX + 17,
+                baseY + 17
+            ]
 
         ];
 
     }
 
-    else if (direction.x < 0) {
+    else if (
+        direction.x < 0
+    ) {
 
         eyes = [
 
-            [baseX+7,baseY+7],
+            [
+                baseX + 7,
+                baseY + 7
+            ],
 
-            [baseX+7,baseY+17]
+            [
+                baseX + 7,
+                baseY + 17
+            ]
 
         ];
 
     }
 
-    else if (direction.y < 0) {
+    else if (
+        direction.y < 0
+    ) {
 
         eyes = [
 
-            [baseX+7,baseY+7],
+            [
+                baseX + 7,
+                baseY + 7
+            ],
 
-            [baseX+17,baseY+7]
+            [
+                baseX + 17,
+                baseY + 7
+            ]
 
         ];
 
@@ -2078,9 +3231,15 @@ function drawEyes(x,y) {
 
         eyes = [
 
-            [baseX+7,baseY+17],
+            [
+                baseX + 7,
+                baseY + 17
+            ],
 
-            [baseX+17,baseY+17]
+            [
+                baseX + 17,
+                baseY + 17
+            ]
 
         ];
     }
@@ -2091,6 +3250,7 @@ function drawEyes(x,y) {
 
             ctx.beginPath();
 
+
             ctx.arc(
                 eye[0],
                 eye[1],
@@ -2098,6 +3258,7 @@ function drawEyes(x,y) {
                 0,
                 Math.PI * 2
             );
+
 
             ctx.fill();
 
@@ -2107,22 +3268,389 @@ function drawEyes(x,y) {
 
 
 /* ============================================================
-   INITIAL START
+   LEVEL SELECTOR
 ============================================================ */
+
+levelSelect.addEventListener(
+    "change",
+    function() {
+
+        if (
+            running
+        ) {
+
+            levelSelect.value =
+                selectedLevel;
+
+
+            setMessage(
+                "⏸ Stop / restart before changing level"
+            );
+
+
+            return;
+        }
+
+
+        selectedLevel =
+            Number(
+                levelSelect.value
+            );
+
+
+        level =
+            selectedLevel;
+
+
+        updateStats();
+
+
+        const names = {
+
+            1: "🟢 EASY",
+
+            2: "🟡 NORMAL",
+
+            3: "🟠 HARD",
+
+            4: "🔴 EXTREME",
+
+            5: "💀 INSANE"
+        };
+
+
+        setMessage(
+            "Selected: " +
+            names[selectedLevel]
+        );
+
+
+        showOverlay(
+            "LEVEL " +
+            selectedLevel,
+            names[selectedLevel] +
+            " • PRESS START"
+        );
+
+
+        playSound(
+            "click"
+        );
+    }
+);
+
+
+/* ============================================================
+   DIFFICULTY BUTTONS
+============================================================ */
+
+document
+    .querySelectorAll(
+        ".diff-btn"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                function() {
+
+                    if (
+                        running
+                    ) {
+
+                        setMessage(
+                            "⏸ Stop game before changing difficulty"
+                        );
+
+                        return;
+                    }
+
+
+                    settings.difficulty =
+                        button.dataset.diff;
+
+
+                    saveSettings();
+
+                    applySettings();
+
+                    updateStats();
+
+
+                    setMessage(
+                        "Difficulty: " +
+                        settings.difficulty
+                    );
+
+
+                    playSound(
+                        "click"
+                    );
+                }
+            );
+
+        }
+    );
+
+
+/* ============================================================
+   GRID BUTTON
+============================================================ */
+
+gridBtn.addEventListener(
+    "click",
+    function() {
+
+        settings.grid =
+            !settings.grid;
+
+
+        saveSettings();
+
+        applySettings();
+
+        draw();
+
+
+        setMessage(
+            settings.grid
+                ? "Grid enabled"
+                : "Grid disabled"
+        );
+
+
+        playSound(
+            "click"
+        );
+    }
+);
+
+
+/* ============================================================
+   SOUND BUTTON
+============================================================ */
+
+soundBtn.addEventListener(
+    "click",
+    function() {
+
+        settings.sound =
+            !settings.sound;
+
+
+        saveSettings();
+
+        applySettings();
+
+
+        setMessage(
+            settings.sound
+                ? "Sound enabled 🔊"
+                : "Sound disabled 🔇"
+        );
+
+
+        if (
+            settings.sound
+        ) {
+
+            playSound(
+                "click"
+            );
+        }
+    }
+);
+
+
+/* ============================================================
+   THEME BUTTON
+============================================================ */
+
+themeBtn.addEventListener(
+    "click",
+    function() {
+
+        const themes = [
+
+            "Dark",
+
+            "Light",
+
+            "Neon"
+        ];
+
+
+        const current =
+            themes.indexOf(
+                settings.theme
+            );
+
+
+        settings.theme =
+            themes[
+                (current + 1) %
+                themes.length
+            ];
+
+
+        saveSettings();
+
+        applySettings();
+
+
+        setMessage(
+            "Theme: " +
+            settings.theme
+        );
+
+
+        playSound(
+            "click"
+        );
+    }
+);
+
+
+/* ============================================================
+   ACTION BUTTONS
+============================================================ */
+
+document
+    .getElementById(
+        "startBtn"
+    )
+    .addEventListener(
+        "click",
+        startGame
+    );
+
+
+document
+    .getElementById(
+        "pauseBtn"
+    )
+    .addEventListener(
+        "click",
+        togglePause
+    );
+
+
+document
+    .getElementById(
+        "restartBtn"
+    )
+    .addEventListener(
+        "click",
+        restartGame
+    );
+
+
+/* ============================================================
+   MOBILE CONTROLS
+============================================================ */
+
+document
+    .querySelectorAll(
+        ".control"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                function() {
+
+                    const dir =
+                        button.dataset.dir;
+
+
+                    if (
+                        dir === "up"
+                    ) {
+
+                        changeDirection(
+                            0,
+                            -1
+                        );
+                    }
+
+
+                    else if (
+                        dir === "down"
+                    ) {
+
+                        changeDirection(
+                            0,
+                            1
+                        );
+                    }
+
+
+                    else if (
+                        dir === "left"
+                    ) {
+
+                        changeDirection(
+                            -1,
+                            0
+                        );
+                    }
+
+
+                    else if (
+                        dir === "right"
+                    ) {
+
+                        changeDirection(
+                            1,
+                            0
+                        );
+                    }
+
+                }
+            );
+
+        }
+    );
+
+
+/* ============================================================
+   INITIALIZE
+============================================================ */
+
+levelSelect.value =
+    "1";
+
+
+selectedLevel = 1;
+
+level = 1;
+
+
+applySettings();
 
 initializeGame();
 
 
 /* ============================================================
-   IDLE ANIMATION
+   ANIMATION
 ============================================================ */
 
 function animationLoop() {
 
-    if (!running) {
+    if (
+        !running
+    ) {
+
+        /*
+            Continue food pulse
+            animation when idle.
+        */
 
         draw();
     }
+
 
     requestAnimationFrame(
         animationLoop
@@ -2132,6 +3660,7 @@ function animationLoop() {
 
 animationLoop();
 
+
 </script>
 
 </body>
@@ -2139,15 +3668,17 @@ animationLoop();
 </html>
 """
 
+
 # ============================================================
-# RENDER GAME
+# DISPLAY GAME
 # ============================================================
 
 components.html(
     game_html,
-    height=930,
-    scrolling=False,
+    height=1040,
+    scrolling=True,
 )
+
 
 # ============================================================
 # FOOTER
@@ -2161,8 +3692,9 @@ st.markdown(
         font-size:10px;
         letter-spacing:2px;
         margin-top:5px;
+        padding-bottom:10px;
     ">
-        BUILT WITH PYTHON + STREAMLIT 🐍
+        🐍 PYTHON SNAKE • BUILT WITH PYTHON + STREAMLIT
     </div>
     """,
     unsafe_allow_html=True,
